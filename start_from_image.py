@@ -15,7 +15,7 @@ model = YOLO('yolov8m.pt')
 confidence_threshold = 0.4  # Quanto menor, mais detecta mas com menos confiabilidade
 
 # Caminho para a imagem de entrada
-image_path = 'detect.jpg'  # Define o caminho da imagem como 'detect.jpg'
+image_path = 'images/detect.jpg'  # Define o caminho da imagem como 'detect.jpg'
 
 # Carrega a imagem de entrada
 frame = cv2.imread(image_path)

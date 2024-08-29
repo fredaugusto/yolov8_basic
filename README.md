@@ -1,6 +1,6 @@
 # YOLOv8 Object Detection
 
-Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos em tempo real a partir da webcam e também para detecção em imagens estáticas. O código captura o vídeo da webcam, aplica o modelo de detecção de objetos YOLOv8 e exibe o vídeo com caixas delimitadoras e rótulos anotados. Além disso, o projeto inclui um script para realizar detecções em uma imagem estática.
+Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos em tempo real a partir da webcam, em imagens estáticas e em vídeos. O código captura o vídeo da webcam, aplica o modelo de detecção de objetos YOLOv8 e exibe o vídeo com caixas delimitadoras e rótulos anotados. Além disso, o projeto inclui scripts para realizar detecções em uma imagem estática e em um vídeo.
 
 ## Requisitos
 
@@ -29,7 +29,7 @@ Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos 
    pip install ultralytics==8.1.0
    ```
 
-   Substitua `8.1.0` pela versão desejada. A 8.2 foi um completo desastre para mim. :)
+   Substitua `8.1.0` pela versão desejada.
 
 3. Baixe o modelo YOLOv8:
 
@@ -53,7 +53,7 @@ Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos 
 
 ### Detecção em Imagem Estática
 
-1. Adicione sua imagem ao diretório do projeto e defina o caminho da imagem no código. No arquivo `start_from_image.py`, o caminho padrão da imagem é `'detect.jpg'`.
+1. Adicione sua imagem ao diretório do projeto e defina o caminho da imagem no código. No arquivo `start_from_image.py`, o caminho padrão da imagem é `'images/detect.jpg'`.
 
 2. Execute o script para detectar objetos na imagem:
 
@@ -63,7 +63,22 @@ Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos 
 
 3. A imagem redimensionada com as caixas delimitadoras e rótulos será exibida em uma janela. O nome da classe e a confiança serão exibidos ao lado das caixas delimitadoras. Pressione qualquer tecla para fechar a janela.
 
+### Detecção em Vídeo
+
+1. Substitua o caminho do modelo YOLOv8 e o caminho do vídeo no código:
+
+   Adicione seu vídeo ao diretório do projeto e defina o caminho da imagem no código. No arquivo `start_from_video.py`, o caminho padrão do vídeo é `'videos/01.jpg'`.
+
+2. Execute o script para detectar objetos no vídeo:
+
+   ```
+   python start_from_video.py
+   ```
+
+3. O vídeo com as caixas delimitadoras e rótulos será exibido em uma janela. O nome da classe e a confiança serão exibidos ao lado das caixas delimitadoras. Pressione a tecla 'q' para sair da aplicação.
+
 ## Arquivos
 
 - `start_from_webcam.py`: Script para detecção de objetos em tempo real a partir da webcam.
 - `start_from_image.py`: Script para detecção de objetos em uma imagem estática.
+- `start_from_video.py`: Script para detecção de objetos em um vídeo.
