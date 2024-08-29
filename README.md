@@ -1,6 +1,6 @@
 # YOLOv8 Webcam Object Detection
 
-Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos em tempo real a partir da webcam. O código captura o vídeo da webcam, aplica o modelo de detecção de objetos YOLOv8 e exibe o vídeo com caixas delimitadoras e rótulos anotados.
+Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos em tempo real a partir da webcam. O código captura o vídeo da webcam, aplica o modelo de detecção de objetos YOLOv8 e exibe o vídeo com caixas delimitadoras e rótulos anotados, mostrando o nome da classe e a confiança da detecção.
 
 ## Requisitos
 
@@ -12,34 +12,42 @@ Este projeto demonstra como utilizar o modelo YOLOv8 para detecção de objetos 
 
 1. Clone este repositório:
 
-   ```bash
+   ```
    git clone https://github.com/your-username/yolov8-webcam-object-detection.git
    cd yolov8-webcam-object-detection
    ```
 
 2. Instale as dependências:
 
-   ```bash
+   ```
    pip install opencv-python ultralytics
    ```
 
+   **Nota:** Se você encontrar problemas com detecções incorretas ou se o modelo não estiver funcionando como esperado, pode ser útil tentar uma versão diferente do pacote `ultralytics`. Você pode trocar a versão do pacote com o seguinte comando:
+
+   ```
+   pip install ultralytics==8.1.0
+   ```
+
+   Substitua `8.1.0` pela versão desejada.
+
 3. Baixe o modelo YOLOv8:
 
-   O modelo pré-treinado pode ser baixado diretamente usando o código ou manualmente do repositório do YOLOv8. Substitua `'yolov8n.pt'` pelo caminho para o seu modelo YOLOv8.
+   O modelo pré-treinado pode ser baixado diretamente usando o código ou manualmente do repositório do YOLOv8. Substitua `'yolov8m.pt'` pelo caminho para o seu modelo YOLOv8.
 
 ## Uso
 
 1. Substitua o caminho do modelo YOLOv8 no código:
 
-   No arquivo `start_from_webcam.py`, substitua `'yolov8n.pt'` pelo caminho do modelo YOLOv8 que você deseja usar.
+   No arquivo `start_from_webcam.py`, substitua `'yolov8m.pt'` pelo caminho do modelo YOLOv8 que você deseja usar.
 
 2. Execute o script:
 
-   ```bash
+   ```
    python start_from_webcam.py
    ```
 
-3. Uma janela será exibida mostrando o vídeo da webcam com as detecções de objetos anotadas. Pressione a tecla 'q' para sair da aplicação.
+3. Uma janela será exibida mostrando o vídeo da webcam com as detecções de objetos anotadas. O nome da classe e a confiança serão exibidos ao lado das caixas delimitadoras. Pressione a tecla 'q' para sair da aplicação.
 
 ## Código
 
@@ -49,49 +57,64 @@ Aqui está o código utilizado para detecção de objetos em tempo real com a we
 import cv2
 from ultralytics import YOLO
 
-# Carregue o modelo YOLOv8
-model = YOLO('yolov8n.pt')  # Substitua pelo caminho para o seu modelo YOLOv8
+# Carrega o modelo YOLOv8m a partir do arquivo 'yolov8m.pt'. Se não houver na raiz da pasta, será automaticamente baixado.
+model = YOLO('yolov8m.pt')
 
-# Abra a webcam
-cap = cv2.VideoCapture(0)  # Índice 0 para a webcam padrão
+# Configura a confiança mínima para considerar uma detecção válida
+confidence_threshold = 0.4  # Quanto menor, mais detecta mas com menos confiabilidade
+
+# Inicia a captura de vídeo da webcam (índice 0 geralmente se refere à webcam padrão)
+cap = cv2.VideoCapture(0)
 
 while True:
-    # Capture frame a frame
+    # Captura um frame da webcam
     ret, frame = cap.read()
-
     if not ret:
-        print("Não foi possível capturar o vídeo.")
+        print("Erro ao capturar a imagem.")  # Mensagem de erro se não for possível capturar o frame
         break
 
-    # Execute a detecção de objetos
-    results = model(frame)
+    # Envia o frame para o modelo YOLO para realizar a detecção de objetos
+    results = model(frame, conf=confidence_threshold)
 
-    # Processar os resultados
+    # Itera sobre os resultados das detecções
     for result in results:
-        # `boxes` é um atributo que contém as caixas delimitadoras e outras informações
-        boxes = result.boxes.xyxy.cpu().numpy()  # Obtém as coordenadas das caixas em formato NumPy
-        confidences = result.boxes.conf.cpu().numpy()  # Obtém as confianças
-        classes = result.boxes.cls.cpu().numpy()  # Obtém as classes
+        # Obtém os nomes das classes detectadas dentro do dicionário
+        class_names = result.names
 
-        for i in range(len(boxes)):
-            # Extraia as coordenadas da caixa delimitadora
-            x1, y1, x2, y2 = boxes[i]
-            conf = confidences[i]
-            cls = int(classes[i])
+        # Itera sobre cada detecção no resultado
+        for detection in result.boxes:
 
-            # Desenhe a caixa delimitadora e o rótulo
-            cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 2)
-            cv2.putText(frame, f'Class {cls} {conf:.2f}', (int(x1), int(y1)-10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+            # Verifica se a confiança da detecção é maior ou igual ao limite definido
+            if detection.conf[0] >= confidence_threshold:
 
-    # Exiba o frame anotado
-    cv2.imshow('YOLOv8 Webcam', frame)
+                # Extrai as coordenadas da caixa delimitadora da detecção
+                x1, y1, x2, y2 = map(int, detection.xyxy[0])  # Coordenadas a partir do canto superior esquerdo (x1, y1) e inferior direito (x2, y2)
+                confidence = detection.conf[0]  # Captura a confiança da detecção
+                class_id = int(detection.cls[0])  # ID da classe detectada
 
-    # Pressione 'q' para sair do loop
+                # Obtém o nome da classe com base no ID da classe
+                class_name = class_names[class_id]
+
+                # Define a cor para desenhar a caixa delimitadora
+                myColor = (255, 0, 0)
+
+                # Desenha a caixa delimitadora ao redor do objeto detectado
+                cv2.rectangle(frame, (x1, y1), (x2, y2), myColor, 2)
+
+                # Insere o rótulo com o nome da classe e a confiança
+                label = f'{class_name} ({confidence:.2f})'
+
+                # Adiciona o rótulo ao frame próximo ao topo da caixa delimitadora
+                cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, myColor, 2)
+
+    # Exibe o frame com as caixas delimitadoras e rótulos no frame do vídeo
+    cv2.imshow('YOLOv8m Object Detection', frame)
+
+    # Fecha a janela e parar a captura se a tecla 'q' for pressionada
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Libere os recursos
+# Libera a captura de vídeo e fechar todas as janelas quando o loop terminar
 cap.release()
 cv2.destroyAllWindows()
 ```
